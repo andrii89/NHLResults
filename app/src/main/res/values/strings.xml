@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">NHLResults</string>
+    <string name="error_message">Connection is failed. Please, try again</string>
+</resources>
