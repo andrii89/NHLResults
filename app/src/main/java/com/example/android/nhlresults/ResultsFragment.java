@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,33 +16,32 @@ import com.example.android.nhlresults.data.Game;
 import com.example.android.nhlresults.data.LeagueRecord;
 import com.example.android.nhlresults.data.MatchDaySchedule;
 import com.example.android.nhlresults.utilities.NetworkUtils;
+import com.example.android.nhlresults.utilities.OnSwipeTouchListener;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 public class ResultsFragment extends Fragment {
 
-    Unbinder unbinder;
+    public static final String ARG_DATE = "date";
+
+    private final String SWIPE_TAG = "Swiping";
 
     private RecyclerView mRecyclerView;
     private List<Game> mItems = new ArrayList<>();
 
     private MatchDaySchedule matchDaySchedule;
 
+    private String currentDate;
+
     //create new instance of the fragment
     public static ResultsFragment newInstance(){
-
         return new ResultsFragment();
     }
 
@@ -51,15 +51,12 @@ public class ResultsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_resultlist, container, false);
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.results_recycler_view);
+        mRecyclerView = view.findViewById(R.id.results_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         setRetainInstance(true);
 
-        Date currentTime = Calendar.getInstance().getTime();
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String date = df.format(currentTime);
-
-        URL nhlResultsUrl = NetworkUtils.buildUrl(date);
+        Bundle args = getArguments();
+        URL nhlResultsUrl = NetworkUtils.buildUrl(args.getString(ARG_DATE));
         new NHLResultsQueryTask().execute(nhlResultsUrl);
 
         updateUI();
@@ -99,6 +96,30 @@ public class ResultsFragment extends Fragment {
             super(itemView);
             itemView.setOnClickListener(this);
             ButterKnife.bind(this, itemView);
+
+            /*itemView.setOnTouchListener(new OnSwipeTouchListener(getContext()) {
+                @Override
+                public void onSwipeLeft() {
+                    Log.i(SWIPE_TAG, "Swiping to left");
+                    Toast.makeText(getContext(), "Swiping to left", Toast.LENGTH_SHORT).show();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(MainActivity.sPagerViewDate);
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                    MainActivity.sPagerViewDate = calendar.getTime();
+
+                }
+
+                @Override
+                public void onSwipeRight() {
+                    Log.i(SWIPE_TAG, "Swiping to right");
+                    Toast.makeText(getContext(), "Swiping to right", Toast.LENGTH_SHORT).show();
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(MainActivity.sPagerViewDate);
+                    calendar.add(Calendar.DAY_OF_YEAR, -1);
+                    MainActivity.sPagerViewDate = calendar.getTime();
+                }
+
+            });*/
         }
 
         @Override
@@ -139,6 +160,7 @@ public class ResultsFragment extends Fragment {
 
         @Override
         public int getItemCount(){
+            //TODO: Protection if there are no games on this day
             return mResults.size();
         }
     }
@@ -188,7 +210,11 @@ public class ResultsFragment extends Fragment {
         protected void onPostExecute(String nhlResults) {
             if (nhlResults != null && !nhlResults.equals("")) {
                 matchDaySchedule = MatchDaySchedule.parseJSON(nhlResults);
-                mItems = matchDaySchedule.getDates().get(0).getGames();
+                if (!matchDaySchedule.getDates().isEmpty()){
+                    mItems = matchDaySchedule.getDates().get(0).getGames();
+                } else {
+                    mItems = null;
+                }
                 updateUI();
                 setupAdapter();
             } else {
