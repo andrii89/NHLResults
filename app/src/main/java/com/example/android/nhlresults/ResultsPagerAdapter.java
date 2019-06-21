@@ -13,8 +13,6 @@ import java.util.Locale;
 
 public class ResultsPagerAdapter extends FragmentStatePagerAdapter {
 
-    private String date;
-
     public ResultsPagerAdapter(FragmentManager fm) {
         super(fm);
     }
@@ -35,7 +33,7 @@ public class ResultsPagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return getDate(position)+" "+position;
+        return getDate(position);
     }
 
     private String getDate(int i){

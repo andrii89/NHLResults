@@ -1,21 +1,12 @@
 package com.example.android.nhlresults;
 
-import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.Toast;
-
-import com.example.android.nhlresults.utilities.NetworkUtils;
-
-import java.io.IOException;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import butterknife.BindView;
